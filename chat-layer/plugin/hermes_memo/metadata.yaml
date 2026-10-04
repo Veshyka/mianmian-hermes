@@ -1,0 +1,6 @@
+name: hermes_memo
+display_name: 常驻记忆块（每轮注入 + 她自己维护）
+desc: 把一份常驻记忆文件每轮注入聊天门的 system prompt（等效 Hermes 的 MEMORY.md/USER.md），并给模型 memo_view/memo_add/memo_replace/memo_remove 四个工具，让她自己维护这块「一直都在」的长期记忆。回补 Hindsight 召回给不了的那层底。
+version: 1.0.0
+author: mianmian
+repo: ""

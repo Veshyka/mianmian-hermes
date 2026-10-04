@@ -1,0 +1,5 @@
+name: hermes_report
+desc: AstrBot 侧「主动回报」接收端：干活门长任务跑完 POST /report，本插件把结果推到主人私聊并把回执留痕。
+version: 0.1.0
+author: 棉棉
+repo: ""

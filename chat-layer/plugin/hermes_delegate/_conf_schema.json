@@ -1,0 +1,12 @@
+{
+  "a2a_url": {
+    "description": "干活门 A2A 端点（默认本机 9901）",
+    "type": "string",
+    "default": "http://127.0.0.1:9901/"
+  },
+  "reply_timeout": {
+    "description": "同步等待秒数；干活门侧上限 A2A_REPLY_TIMEOUT=300",
+    "type": "int",
+    "default": 300
+  }
+}

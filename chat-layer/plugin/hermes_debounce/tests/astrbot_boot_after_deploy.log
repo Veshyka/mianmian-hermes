@@ -1,0 +1,83 @@
+Warning: Permanently added '172.17.0.1' (ED25519) to the list of known hosts.
+Could not chdir to home directory /home/棉棉: No such file or directory
+[32m[13:18:27.990][0m [Core] [1m[INFO][0m [core.dashboard_assets:226]: [1mUsing bundled dashboard dist: /AstrBot/astrbot/dashboard/dist[0m
+[32m[13:18:27.990][0m [Core] [1m[INFO][0m [AstrBot.main:144]: [1m
+     ___           _______.___________..______      .______     ______   .___________.
+    /   \         /       |           ||   _  \     |   _  \   /  __  \  |           |
+   /  ^  \       |   (----`---|  |----`|  |_)  |    |  |_)  | |  |  |  | `---|  |----`
+  /  /_\  \       \   \       |  |     |      /     |   _  <  |  |  |  |     |  |
+ /  _____  \  .----)   |      |  |     |  |\  \----.|  |_)  | |  `--'  |     |  |
+/__/     \__\ |_______/       |__|     | _| `._____||______/   \______/      |__|
+
+[0m
+[32m[13:18:27.990][0m [Core] [1m[INFO][0m [core.core_lifecycle:163]: [1mAstrBot v4.28.1[0m
+[32m[13:18:28.044][0m [Core] [1m[INFO][0m [core.persona_mgr:43]: [1mLoaded 1 personas.[0m
+[32m[13:18:28.046][0m [Core] [1m[INFO][0m [star.star_manager:306]: [1mPlugin hermes_forward has neither main.py nor hermes_forward.py; skipping it.[0m
+[32m[13:18:28.047][0m [Core] [1m[INFO][0m [star.star_manager:1128]: [1mLoading plugin astrbot_plugin_cwa_alert ...[0m
+[32m[13:18:28.175][0m [Core] [1m[INFO][0m [star.star_manager:1212]: [1mPlugin astrbot_plugin_cwa_alert (0.1.1) by Qiuxyi_0: 透過中央氣象署開放資料 API 與官方 RSS，向已登記群組播報天氣、地震、颱風、豪雨及其他災害警特報。[0m
+[32m[13:18:28.176][0m [Core] [1m[INFO][0m [star.base:45]: [1mPlugin astrbot_plugin_cwa_alert log level: INFO.[0m
+[32m[13:18:28.184][0m [Core] [1m[INFO][0m [star.star_manager:1128]: [1mLoading plugin hermes_delegate ...[0m
+[32m[13:18:28.190][0m [Core] [1m[INFO][0m [provider.func_tool_manager:390]: [1mAdded llm tool: delegate_to_hermes[0m
+[32m[13:18:28.191][0m [Core] [1m[INFO][0m [star.star_manager:1212]: [1mPlugin hermes_delegate (0.1.0) by 棉棉: 给 AstrBot 提供「派活给 Hermes 干活门」的 LLM 工具（A2A message/send）。[0m
+[32m[13:18:28.191][0m [Core] [1m[INFO][0m [star.base:45]: [1mPlugin hermes_delegate log level: INFO.[0m
+[32m[13:18:28.191][0m [Core] [1m[INFO][0m [star.star_manager:1128]: [1mLoading plugin hermes_memory ...[0m
+[32m[13:18:28.193][0m [Core] [1m[INFO][0m [star.star_manager:1212]: [1mPlugin hermes_memory (1.0.0) by mianmian: 每轮对话结束后自动把「主人/群友说的 + 猫猫回的」写进 Hindsight 记忆库，与 Hermes 两个门共用同一 bank[0m
+[32m[13:18:28.193][0m [Core] [1m[INFO][0m [star.base:45]: [1mPlugin hermes_memory log level: INFO.[0m
+[32m[13:18:28.193][0m [hermes_memory] [1m[INFO][0m [hermes_memory.main:55]: [1m[hermes_memory] 就绪 bank=mianmian-history mode=both api=http://172.17.0.1:8888[0m
+[32m[13:18:28.193][0m [Core] [1m[INFO][0m [star.star_manager:1128]: [1mLoading plugin hermes_report ...[0m
+[32m[13:18:28.195][0m [Core] [1m[INFO][0m [star.star_manager:1212]: [1mPlugin hermes_report (0.1.0) by 棉棉: AstrBot 侧「主动回报」接收端：干活门长任务跑完 POST /report，本插件把结果推到主人私聊并把回执留痕。[0m
+[32m[13:18:28.195][0m [Core] [1m[INFO][0m [star.base:45]: [1mPlugin hermes_report log level: INFO.[0m
+[32m[13:18:28.196][0m [hermes_report] [1m[INFO][0m [hermes_report.main:208]: [1m[hermes_report] 就绪 port=8098 token=有 last_umo=aiocqhttp:FriendMessage:<OWNER_QQ> 待注入回执=0 条 inject=开[0m
+[32m[13:18:28.196][0m [Core] [1m[INFO][0m [star.star_manager:1128]: [1mLoading plugin astrbot_plugin_qzone ...[0m
+[32m[13:18:28.489][0m [Core] [1m[INFO][0m [provider.func_tool_manager:390]: [1mAdded llm tool: llm_view_feed[0m
+[32m[13:18:28.492][0m [Core] [1m[INFO][0m [provider.func_tool_manager:390]: [1mAdded llm tool: llm_publish_feed[0m
+[32m[13:18:28.493][0m [Core] [1m[INFO][0m [star.star_manager:1212]: [1mPlugin astrbot_plugin_qzone (v3.1.0) by Zhalslar: QQ空间对接插件, 支持查看/点赞/评论说说、自动发说说、AI写说说、表白墙投稿与审核等功能[0m
+[32m[13:18:28.494][0m [Core] [1m[INFO][0m [star.base:45]: [1mPlugin astrbot_plugin_qzone log level: INFO.[0m
+[32m[13:18:28.521][0m [astrbot_plugin_qzone] [1m[INFO][0m [core.scheduler:82]: [1m[AutoComment] 基准时间：2026-09-24 08:00:00+08:00，偏移：283 秒，执行时间：2026-09-24 08:04:43+08:00[0m
+[32m[13:18:28.522][0m [astrbot_plugin_qzone] [1m[INFO][0m [core.scheduler:41]: [1m[AutoComment] 已启动，任务周期：0 8 * * *，偏移范围：±600 分钟[0m
+[32m[13:18:28.523][0m [astrbot_plugin_qzone] [1m[INFO][0m [core.scheduler:82]: [1m[AutoPublish] 基准时间：2026-09-23 23:30:00+08:00，偏移：293 秒，执行时间：2026-09-23 23:34:53+08:00[0m
+[32m[13:18:28.523][0m [astrbot_plugin_qzone] [1m[INFO][0m [core.scheduler:41]: [1m[AutoPublish] 已启动，任务周期：30 23 * * *，偏移范围：±600 分钟[0m
+[32m[13:18:28.523][0m [Core] [1m[INFO][0m [star.star_manager:1128]: [1mLoading plugin hermes_debounce ...[0m
+[32m[13:18:28.524][0m [Core] [1m[INFO][0m [star.star_manager:1212]: [1mPlugin hermes_debounce (1.0.0) by mianmian: 私聊里主人连发多条消息时，等静默窗口（默认 7 秒，来新消息就重新计时）把这批消息合并成一轮交给模型，只回一次；有硬上限（默认 45 秒）防止无限等待。[0m
+[32m[13:18:28.525][0m [Core] [1m[INFO][0m [star.base:45]: [1mPlugin hermes_debounce log level: INFO.[0m
+[32m[13:18:28.525][0m [hermes_debounce] [1m[INFO][0m [hermes_debounce.main:111]: [1m[hermes_debounce] 就绪 enabled=True wait=7.0s max_wait=45.0s scope=private[0m
+[32m[13:18:28.525][0m [Core] [1m[INFO][0m [star.star_manager:1128]: [1mLoading plugin astrbot ...[0m
+[32m[13:18:28.528][0m [Core] [1m[INFO][0m [star.star_manager:1212]: [1mPlugin astrbot (4.4.0) by AstrBot Team: AstrBot's internal plugin, providing some basic capabilities.[0m
+[32m[13:18:28.528][0m [Core] [1m[INFO][0m [star.star_manager:1128]: [1mLoading plugin builtin_commands ...[0m
+[32m[13:18:28.532][0m [Core] [1m[INFO][0m [star.star_manager:1212]: [1mPlugin builtin_commands (0.0.1) by Soulter: AstrBot's internal plugin, providing all built-in commands such as /reset.[0m
+[32m[13:18:28.535][0m [Core] [1m[INFO][0m [provider.manager:676]: [1mLoading model openai_chat_completion(deepseek/deepseek-flash) ...[0m
+[32m[13:18:28.951][0m [Core] [1m[INFO][0m [provider.manager:781]: [1mSelected openai_chat_completion(deepseek/deepseek-flash) as default chat model provider[0m
+[32m[13:18:28.951][0m [Core] [1m[INFO][0m [provider.manager:676]: [1mLoading model openai_chat_completion(local/bonsai2-27b) ...[0m
+[32m[13:18:28.956][0m [Core] [1m[INFO][0m [provider.func_tool_manager:590]: [1m等待 1 个 MCP 服务初始化...[0m
+[32m[13:18:28.982][0m [Core] [1m[INFO][0m [knowledge_base.kb_mgr:64]: [1mKnowledgeBase database initialized: /AstrBot/data/knowledge_base/kb.db[0m
+[32m[13:18:29.149][0m [Core] [1m[INFO][0m [respond.stage:88]: [1mSegmented-reply interval: [1.5, 3.5][0m
+[32m[13:18:29.149][0m [Core] [1m[INFO][0m [platform.manager:129]: [1mLoading IM platform adapter aiocqhttp(aiocqhttp) ...[0m
+[32m[13:18:29.285][0m [Core] [1m[INFO][0m [dashboard.server:543]: [1mStarting WebUI at http://0.0.0.0:6185[0m
+[32m[13:18:29.286][0m [Core] [1m[INFO][0m [dashboard.server:545]: [1mWebUI listens on all interfaces. Check security. Set dashboard.host in data/cmd_config.json to change it.[0m
+[32m[13:18:29.286][0m [Core] [1m[INFO][0m [dashboard.server:588]: [1m
+ ✨✨✨
+  AstrBot v4.28.1 WebUI is ready
+
+   ➜  Local: http://localhost:6185
+   ➜  Network: http://127.0.0.1:6185
+   ➜  Network: http://192.168.123.110:6185
+   ➜  Network: http://172.18.0.1:6185
+   ➜  Network: http://172.19.0.1:6185
+   ➜  Network: http://172.20.0.1:6185
+   ➜  Network: http://172.22.0.1:6185
+   ➜  Network: http://172.17.0.1:6185
+   ➜  Network: http://100.73.132.15:6185
+   ➜  Username: astrbot
+ ✨✨✨
+[0m
+[32m[13:18:29.287][0m [Core] [1m[INFO][0m [utils.event_loop_diagnostics:239]: [1mEvent loop watchdog enabled: timeout=30.000s interval=5.000s. If the loop is blocked, Python thread stacks will be written to /AstrBot/data/logs/event_loop_watchdog.log (rotates at 1048576 bytes).[0m
+[32m[13:18:29.287][0m [Core] [1m[INFO][0m [core.core_lifecycle:364]: [1mAstrBot started.[0m
+[32m[13:18:29.287][0m [Core] [1m[INFO][0m [core.core_lifecycle:372]: [1mhook(on_astrbot_loaded) -> hermes_report - start_server[0m
+[32m[13:18:29.303][0m [Core] [1m[INFO][0m [utils.temp_dir_cleaner:127]: [1mTempDirCleaner started. interval=600s cleanup_ratio=0.3[0m
+[32m[13:18:29.306][0m [hermes_report] [1m[INFO][0m [hermes_report.main:345]: [1m[hermes_report] 接收端已监听 http://172.17.0.1:8098/report[0m
+[32m[13:18:29.441][0m [Core] [1m[INFO][0m [provider.func_tool_manager:712]: [1mConnected to MCP server hindsight, Tools: ['retain', 'sync_retain', 'recall', 'reflect', 'list_mental_models', 'get_mental_model', 'create_mental_model', 'update_mental_model', 'delete_mental_model', 'refresh_mental_model', 'clear_mental_model', 'list_directives', 'create_directive', 'delete_directive', 'list_memories', 'get_memory', 'update_memory', 'invalidate_memory', 'list_documents', 'get_document', 'delete_document', 'list_operations', 'get_operation', 'cancel_operation', 'list_tags', 'get_bank', 'update_bank', 'delete_bank', 'clear_memories'][0m
+[32m[13:18:29.441][0m [Core] [1m[INFO][0m [t2i.network_strategy:131]: [1mSuccessfully got 2 official T2I endpoints.[0m
+[32m[13:18:29.442][0m [Core] [1m[INFO][0m [provider.func_tool_manager:634]: [1mMCP services initialization completed: 1/1 successful, 0 failed.[0m
+[2026-09-23 13:18:29 +0800] [1] [INFO] Running on http://0.0.0.0:6185 (CTRL + C to quit)
+[32m[13:18:31.094][0m [Core] [1m[INFO][0m [aiocqhttp.aiocqhttp_platform_adapter:107]: [1maiocqhttp(OneBot v11) 适配器已连接。[0m
+[32m[13:18:31.684][0m [Core] [1m[INFO][0m [utils.llm_metadata:79]: [1mSuccessfully fetched metadata for 3814 LLMs from https://models.dev/api.json.[0m

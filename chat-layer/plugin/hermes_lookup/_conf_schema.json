@@ -1,0 +1,52 @@
+{
+  "enable": {
+    "type": "bool",
+    "description": "总开关。关掉后查询工具直接回「已关闭」，不联网。",
+    "default": true
+  },
+  "enforce_boundary": {
+    "type": "bool",
+    "description": "边界执行。开：每轮按人格 tools 白名单把白名单外的工具从请求里摘掉（AstrBot local runtime 会无条件塞 shell/python/文件写 进来，光靠人格白名单挡不住），并把那段「你能跑 shell/Python」的英文提示删掉。关：不摘，工具面等于白名单 ∪ local runtime 那批。",
+    "default": true
+  },
+  "owner_umo": {
+    "type": "string",
+    "description": "主人私聊 umo，recent_activity（只读查「主人多久前说过话」）用它定位会话。",
+    "default": "aiocqhttp:FriendMessage:<OWNER_QQ>"
+  },
+  "searxng_url": {
+    "type": "string",
+    "description": "自建 SearXNG 地址（容器视角）。必须开了 format=json。",
+    "default": "http://172.17.0.1:18888"
+  },
+  "proxy": {
+    "type": "string",
+    "description": "宿主代理。仅 fetch_page 直连拿不到时用一次（境外站点需要）；国内站点和 B 站 API 都直连，不走它。",
+    "default": "http://172.17.0.1:17890"
+  },
+  "timeout": {
+    "type": "int",
+    "description": "单个请求的超时秒数（硬超时，超了就返回人话）。默认 15。",
+    "default": 15
+  },
+  "max_results": {
+    "type": "int",
+    "description": "搜索/B站搜默认返回条数。默认 5。",
+    "default": 5
+  },
+  "max_results_cap": {
+    "type": "int",
+    "description": "搜索/B站搜单次返回条数上限（防她一口气要 50 条把上下文塞满）。默认 8。",
+    "default": 8
+  },
+  "fetch_max_chars": {
+    "type": "int",
+    "description": "fetch_page 默认返回的正文最大字数。默认 6000。",
+    "default": 6000
+  },
+  "trace_tools": {
+    "type": "bool",
+    "description": "自检开关：打开后每轮把「边界执行后真正暴露给 LLM 的工具名」打一行日志（[hermes_lookup] 本轮工具面(...)）。核对完就关掉，省日志。",
+    "default": false
+  }
+}

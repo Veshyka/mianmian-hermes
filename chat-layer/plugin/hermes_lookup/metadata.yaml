@@ -1,0 +1,6 @@
+name: hermes_lookup
+display_name: 单次查询工具箱（搜索/抓网页/B站）
+desc: 给聊天门装「一次调用就出结果」的查询能力：web_search（自建 SearXNG）、fetch_page（抓网页正文，公众号走微信 UA）、bilibili_lookup（BV号查元数据/官方分章/字幕）、bilibili_search（关键词搜B站）。全部免登录、单次请求、硬超时；多轮/长活/登录态的活不在这里做，去 delegate_to_hermes。
+version: 1.0.0
+author: mianmian
+repo: ""

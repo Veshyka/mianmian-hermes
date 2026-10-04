@@ -1,0 +1,47 @@
+{
+  "enable": {
+    "type": "bool",
+    "description": "【总开关】整个插件开不开（关掉=不注入、不可写）",
+    "default": true
+  },
+  "memo_path": {
+    "type": "string",
+    "description": "【文件】常驻记忆文件路径（容器视角）。宿主对应 stack/astrbot/data/mianmian-memo/MEMORY.md，主人可直接打开看",
+    "default": "/AstrBot/data/mianmian-memo/MEMORY.md"
+  },
+  "char_limit": {
+    "type": "int",
+    "description": "【文件】整块字数上限（超限的写入会被拒，并提示她先合并/删旧的）",
+    "default": 2500
+  },
+  "entry_max_chars": {
+    "type": "int",
+    "description": "【文件】单条字数上限",
+    "default": 400
+  },
+  "seed_if_missing": {
+    "type": "bool",
+    "description": "【文件】文件不存在时写入初始条目（只在不存在时写一次，之后只由她自己改）",
+    "default": true
+  },
+  "inject_enable": {
+    "type": "bool",
+    "description": "【注入】每轮请求发出前，是否把常驻记忆块追加到她的 system prompt",
+    "default": true
+  },
+  "inject_umos": {
+    "type": "list",
+    "description": "【注入】对这些会话注入。[\"*\"]=全部会话（默认：连贯性不分群聊私聊）；也可只填主人私聊 umo",
+    "default": ["*"]
+  },
+  "tools_enable": {
+    "type": "bool",
+    "description": "【她自己改】是否允许她用 memo_* 工具写常驻记忆（关掉=只能读）",
+    "default": true
+  },
+  "write_umos": {
+    "type": "list",
+    "description": "【她自己改】只允许在这些会话里写（默认=主人私聊，防群聊里的人改她的长期记忆）",
+    "default": ["aiocqhttp:FriendMessage:<OWNER_QQ>"]
+  }
+}

@@ -1,0 +1,70 @@
+# 聊天层：NapCat(QQ 个人号协议端) + AstrBot(通道层)
+#
+# 为什么用 host 网络：hermes 容器本身就是 network_mode: host，
+# 它的 api_server 只绑宿主 127.0.0.1:8642。桥接容器只有同在宿主网络里
+# 才能直连 —— 这样 Hermes 侧零配置改动（不换 bind、不重发端口）。
+#
+# 两个服务的端口因此直接落在宿主上：
+#   6185 AstrBot WebUI   |  6199 AstrBot 反向 WS(NapCat 连它)  |  6099 NapCat WebUI
+# 宿主无公网 IPv4，暴露面限于本机 + Tailscale；面板务必设强口令。
+#
+# 数据目录（全部落在宿主 hermes 文件夹里，删容器不删数据）：
+#   ../stack/napcat/config   NapCat 配置        ../stack/napcat/ntqq  QQ 登录态
+#   ../stack/astrbot/data    AstrBot 配置与插件
+# 代码/文档留在本目录：compose、脚本、plugin/hermes_forward（挂进容器）、stickers、PLAN.md
+# 2026-09-20 重整：容器运行时数据统一收到 ../stack/，与代码分离。
+
+services:
+  napcat:
+    image: mlikiowa/napcat-docker:latest
+    container_name: napcat
+    restart: unless-stopped
+    # 快速登录免扫码：entrypoint.sh 最后一行是
+    #   gosu napcat /opt/QQ/qq --no-sandbox -q $ACCOUNT
+    # 它读的是【环境变量 ACCOUNT】，不是命令行参数 ——
+    # 早先写的 compose command: ["-q", ...] 因此从未生效（entrypoint 忽略 $@）。
+    environment:
+      - ACCOUNT=<BOT_QQ>
+      - NAPCAT_UID=${NAPCAT_UID:-1003}
+      - NAPCAT_GID=${NAPCAT_GID:-1001}
+      - TZ=Asia/Shanghai
+    network_mode: host
+    volumes:
+      - ../stack/napcat/config:/app/napcat/config
+      - ../stack/napcat/ntqq:/app/.config/QQ
+    mem_limit: 1536m
+    security_opt:
+      - no-new-privileges:true
+
+  astrbot:
+    image: soulter/astrbot:latest
+    container_name: astrbot
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TZ=Asia/Shanghai
+      # 插件热重载：AstrBot 只在 ASTRBOT_RELOAD=1 时才启 watchfiles 监视插件目录
+      # （源码 star_manager.py:231 `if os.getenv("ASTRBOT_RELOAD","0")=="1"`）。
+      # 开着的意义：改 data/plugins/<插件>/main.py 后自动 reload，不必重启容器
+      # （日志出现 `Detected file changes for plugin X; reloading.`）。
+      # 不想要就删掉这一行再 `docker compose up -d` 重建容器。
+      - ASTRBOT_RELOAD=1
+    volumes:
+      - ../stack/astrbot/data:/AstrBot/data
+      - ./plugin/hermes_forward:/AstrBot/data/plugins/hermes_forward
+      - ./stickers:/AstrBot/data/plugins/hermes_forward/stickers
+      # 源码补丁目录（只读挂进容器；重建后由下面的 entrypoint 自动重打，见 patches/README.md）
+      - ./patches:/opt/astrbot-patches:ro
+      # 主动回报接收端（干活门长任务跑完 POST /report → 发主人私聊 + 写记忆）
+      # 见 plugin/hermes_report/main.py；宿主侧发送脚本 scripts/report_to_chat.sh
+      - ./plugin/hermes_report:/AstrBot/data/plugins/hermes_report
+      - /etc/localtime:/etc/localtime:ro
+    # 启动入口：先幂等重打 /AstrBot 源码补丁（本地工具 context 传参 bug）再 exec 镜像原 CMD。
+    # 镜像自身的 ENTRYPOINT 是 null、CMD 是 ["python","main.py"]，本脚本用 `exec "$@"` 承接原 CMD。
+    # 为什么要它：源码在镜像层，容器一重建补丁就丢 → 本地工具静默变回 missing/multiple values 'context'。
+    entrypoint: ["/bin/bash", "/opt/astrbot-patches/astrbot-entrypoint.sh"]
+    mem_limit: 1024m
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - napcat

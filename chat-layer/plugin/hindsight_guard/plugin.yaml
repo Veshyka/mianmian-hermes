@@ -1,0 +1,7 @@
+name: hindsight_guard
+version: 0.1.0
+description: >
+  群聊回合的记忆隔离闸（群聊 C1 硬前置）。Hindsight 的透明包装：私聊一切照旧，
+  群回合**不写主库、不召回、不放行记忆类工具**（判据 = chat_type 主信号 + onebot 适配器
+  的 `source=qq-group` 标记兜底）。配置 `memory.provider: hindsight_guard` 即启用；
+  改回 `hindsight` 一行回退。证据落 `<HERMES_HOME>/hindsight_guard/state.json`（只有计数）。

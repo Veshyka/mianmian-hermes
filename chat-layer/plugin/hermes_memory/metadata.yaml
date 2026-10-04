@@ -1,0 +1,6 @@
+name: hermes_memory
+display_name: 记忆桥（Hindsight 回填 + 召回）
+desc: AstrBot 与 Hindsight 记忆库的双向自动同步：每轮对话结束后自动回填（retain），每轮请求前按当前消息自动语义召回并注入本轮上下文（recall），与 Hermes 两个门共用同一 bank
+version: 1.1.0
+author: mianmian
+repo: ""

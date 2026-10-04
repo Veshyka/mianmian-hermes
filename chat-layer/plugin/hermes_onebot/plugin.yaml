@@ -1,0 +1,29 @@
+name: onebot
+label: OneBot v11 (QQ 小号 / NapCat)
+kind: platform
+version: 0.1.0
+description: >
+  OneBot v11 平台适配器（反向 WebSocket）—— 让 Hermes 直接用 QQ 小号，
+  不需要 AstrBot 当中间层。适配器内实现两件 Hermes 本身没有的能力：
+  出站分段（`⁂` 分隔 → 拆多条发，段间隔 1.5~3.5s；容错 `※`/`⸮`，见 segmentation.py 的 SEP 常量）与入站防抖
+  （10s 重置式窗口 / 45s 硬上限 / 默认仅私聊 / 群聊按会话+发送者分桶）。
+  安全默认：read_only=true（只收不发）。
+author: 棉棉 (for 主人)
+requires_env:
+  - name: ONEBOT_ACCESS_TOKEN
+    description: "OneBot v11 反向 WS 鉴权 token（与 NapCat 侧配置一致）"
+    prompt: "OneBot access token"
+    password: true
+optional_env:
+  - name: ONEBOT_WS_HOST
+    description: "反向 WS 监听地址（默认 127.0.0.1；只服务本机 NapCat 就不要动）"
+    prompt: "Listen host"
+    password: false
+  - name: ONEBOT_WS_PORT
+    description: "反向 WS 监听端口（默认 6700）"
+    prompt: "Listen port"
+    password: false
+  - name: ONEBOT_SELF_ID
+    description: "小号 QQ 号（多账号时用于路由，单账号可留空）"
+    prompt: "Self QQ id"
+    password: false

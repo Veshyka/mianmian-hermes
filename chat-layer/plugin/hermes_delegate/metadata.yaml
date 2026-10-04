@@ -1,0 +1,5 @@
+name: hermes_delegate
+desc: 给 AstrBot 提供「派活给 Hermes 干活门」的 LLM 工具（A2A message/send）。
+version: 0.1.0
+author: 棉棉
+repo: ""

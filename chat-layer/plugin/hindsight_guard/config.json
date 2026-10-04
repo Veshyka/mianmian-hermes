@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "blocked_chat_types": ["group", "channel", "supergroup", "guild"],
+  "marker": "source=qq-group",
+  "write_tools": ["hindsight_retain"],
+  "read_tools": ["hindsight_recall", "hindsight_reflect"]
+}

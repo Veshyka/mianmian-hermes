@@ -1,0 +1,23 @@
+{
+  "enabled": {
+    "type": "bool",
+    "description": "总开关。关掉则完全不介入消息流，恢复成「一条一回」。",
+    "default": true
+  },
+  "wait_seconds": {
+    "type": "int",
+    "description": "静默窗口（秒）。主人发一条后等这么久再交模型；期间每来一条新消息就重新计时。默认 7。",
+    "default": 7
+  },
+  "max_wait_seconds": {
+    "type": "int",
+    "description": "硬上限（秒）。从这一轮第一条消息算起，最多攒这么久，到点强制放行给模型，防止主人一直发就永远不回。默认 45。",
+    "default": 45
+  },
+  "scope": {
+    "type": "string",
+    "description": "生效范围。private=只在私聊合并（默认）；both=私聊和群聊都合并，群聊按「会话+发送者」分别攒，不会把不同人的话混成一轮。",
+    "default": "private",
+    "options": ["private", "both"]
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "hindsight_url": {
+    "type": "string",
+    "description": "【共享】Hindsight API 地址（容器视角）",
+    "default": "http://172.17.0.1:8888"
+  },
+  "bank_id": {
+    "type": "string",
+    "description": "【共享】记忆库 bank（与 Hermes 两个门一致，retain 与 recall 都走它）",
+    "default": "mianmian-history"
+  },
+  "timeout": {
+    "type": "int",
+    "description": "【共享】写入（retain）请求超时秒数；写入是异步的，给足即可",
+    "default": 30
+  },
+  "retain_enable": {
+    "type": "bool",
+    "description": "【回填 retain】一轮对话结束后，是否把「说的 + 回的」写进 Hindsight",
+    "default": true
+  },
+  "retain_mode": {
+    "type": "string",
+    "description": "【回填 retain】入库范围：both=私聊和群聊都存；private_only=只存私聊",
+    "default": "both",
+    "options": ["both", "private_only"]
+  },
+  "retain_min_chars": {
+    "type": "int",
+    "description": "【回填 retain】原话少于这个字数不入库（挡「。。」这类噪声）",
+    "default": 4
+  },
+  "retain_max_chars": {
+    "type": "int",
+    "description": "【回填 retain】单条内容上限（字符），超了截断",
+    "default": 2000
+  },
+  "retain_skip_report_inbound": {
+    "type": "bool",
+    "description": "【回填 retain】干活门回执那种「自动注入轮」是否也不入库（默认 false=照旧入库，不改老行为）",
+    "default": false
+  },
+  "recall_enable": {
+    "type": "bool",
+    "description": "【召回 recall】每轮请求前，是否按当前消息语义召回记忆并注入本轮上下文",
+    "default": true
+  },
+  "recall_umos": {
+    "type": "list",
+    "description": "【召回 recall】只对这些会话注入。留空=用默认主人私聊 umo；[\"*\"]=全部会话（不推荐，群聊会暴露记忆）",
+    "default": ["aiocqhttp:FriendMessage:<OWNER_QQ>"]
+  },
+  "recall_min_chars": {
+    "type": "int",
+    "description": "【召回 recall】当前消息短于这个字数就不召回（「在吗」这类不必查）",
+    "default": 2
+  },
+  "recall_budget": {
+    "type": "string",
+    "description": "【召回 recall】Hindsight 检索力度：low 最快（本机实测 0.6~0.8s）；越高越慢越全",
+    "default": "low",
+    "options": ["low", "mid", "high"]
+  },
+  "recall_top_k": {
+    "type": "int",
+    "description": "【召回 recall】最多注入几条记忆",
+    "default": 8
+  },
+  "recall_min_score": {
+    "type": "float",
+    "description": "【召回 recall】丢掉 scores.final 低于此值的条目；0=不过滤（本机 final 量级约 0.6~1.6，别乱设）",
+    "default": 0.0
+  },
+  "recall_max_tokens": {
+    "type": "int",
+    "description": "【召回 recall】传给 Hindsight 的结果预算（服务端按它截断）",
+    "default": 1024
+  },
+  "recall_max_chars": {
+    "type": "int",
+    "description": "【召回 recall】注入块「条目部分」字数上限，超了丢尾部条目",
+    "default": 1200
+  },
+  "recall_query_max_chars": {
+    "type": "int",
+    "description": "【召回 recall】查询串截断长度（对齐 Hermes 的 recall_max_input_chars）",
+    "default": 800
+  },
+  "recall_timeout_s": {
+    "type": "float",
+    "description": "【召回 recall】硬超时秒数：超了这轮降级为不注入（宁可没记忆，不拖回复）",
+    "default": 3.0
+  },
+  "recall_role": {
+    "type": "string",
+    "description": "【召回 recall】注入进 req.contexts 的角色（user=与 hermes_report 注入一致；system=更强调「非用户发言」）",
+    "default": "user",
+    "options": ["user", "system"]
+  },
+  "recall_preamble": {
+    "type": "string",
+    "description": "【召回 recall】注入块开场白；留空用内置中文说明",
+    "default": ""
+  },
+  "recall_tags": {
+    "type": "string",
+    "description": "【召回 recall】按标签过滤（逗号分隔）；留空=不过滤（过滤会漏掉 legacy 记忆）",
+    "default": ""
+  },
+  "recall_tags_match": {
+    "type": "string",
+    "description": "【召回 recall】标签匹配模式",
+    "default": "any",
+    "options": ["any", "all", "any_strict", "all_strict"]
+  },
+  "recall_types": {
+    "type": "string",
+    "description": "【召回 recall】按事实类型过滤（逗号分隔，可选 observation/world/experience）；留空=不限类型",
+    "default": ""
+  }
+}

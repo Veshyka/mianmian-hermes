@@ -1,0 +1,6 @@
+name: hermes_debounce
+display_name: 连发消息合并
+desc: 私聊里主人连发多条消息时，等静默窗口（默认 7 秒，来新消息就重新计时）把这批消息合并成一轮交给模型，只回一次；有硬上限（默认 45 秒）防止无限等待。
+version: 1.0.0
+author: mianmian
+repo: ""
