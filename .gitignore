@@ -1,0 +1,27 @@
+# 纵深防御：即使以后有人手工往仓库里加了东西，这些也进不去
+.env
+.env.*
+*.env
+secrets/
+*.token
+*.pem
+*.key
+id_rsa*
+*.db
+*.db-wal
+*.db-shm
+*.sqlite*
+*.bak
+*.bak-*
+*.orig
+*.rej
+*~
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+logs/
+memories/
+audio_cache/
+onebot-stickers/
+.DS_Store

@@ -1,0 +1,208 @@
+model:
+  default: deepseek-v4-flash
+  provider: deepseek
+  base_url: ''
+database:
+  journal_mode: wal
+runtime:
+  nofile_soft_limit: 4096
+agent:
+  max_turns: 500
+  verbose: false
+  reasoning_effort: low
+  personalities: {}
+terminal:
+  backend: local
+  cwd: .
+  timeout: 180
+  home_mode: auto
+  container_cpu: 1
+  container_memory: 5120
+  container_disk: 51200
+  container_persistent: true
+  docker_mount_cwd_to_workspace: false
+  lifetime_seconds: 300
+web:
+  search_backend: searxng
+browser:
+  inactivity_timeout: 120
+  cdp_url: http://127.0.0.1:16002
+  extension_control:
+    enabled: false
+tool_loop_guardrails:
+  warnings_enabled: true
+  hard_stop_enabled: false
+  warn_after:
+    exact_failure: 2
+    same_tool_failure: 3
+    idempotent_no_progress: 2
+  hard_stop_after:
+    exact_failure: 5
+    same_tool_failure: 8
+    idempotent_no_progress: 5
+compression:
+  enabled: true
+  progress_notices: false
+  threshold: 0.25
+  threshold_tokens: 250000
+  target_ratio: 0.2
+  protect_last_n: 20
+  min_tail_user_messages: 1
+  max_attempts: 3
+  proactive_prune_tokens: 0
+  proactive_prune_min_result_chars: 8000
+  proactive_prune_min_reclaim_tokens: 4096
+  protect_first_n: 3
+  codex_gpt55_autoraise: true
+  codex_app_server_auto: native
+  codex_responses_native: false
+  codex_responses_compact_threshold: 200000
+  idle_compact_after_seconds: 0
+prompt_caching:
+  cache_ttl: 5m
+auxiliary:
+  free_only: true
+  vision:
+    provider: custom
+    model: bonsai2-27b
+    base_url: http://172.17.0.1:8081/v1
+    extra_body:
+      chat_template_kwargs:
+        enable_thinking: false
+display:
+  compact: false
+  busy_input_mode: interrupt
+  bell_on_complete: false
+  show_reasoning: false
+  background_process_notifications: concise
+  streaming: true
+  skin: default
+  interim_assistant_messages: true
+  tool_progress: all
+  cleanup_progress: false
+  long_running_notifications: true
+  busy_ack_detail: true
+stt:
+  enabled: true
+  language: ''
+  local:
+    model: base
+  openai:
+    model: Systran/faster-whisper-small
+    language: ''
+    base_url: http://172.17.0.1:8090/v1
+  provider: openai
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+  memory_char_limit: 2200
+  user_char_limit: 1375
+  nudge_interval: 10
+  provider: hindsight_flush
+delegation:
+  max_iterations: 250
+skills:
+  external_dirs:
+    - /opt/data/shared-skills
+  creation_nudge_interval: 15
+curator:
+  interval_hours: 8760
+  archive_after_days: 180
+  consolidate: true
+  prune_builtins: false
+timezone: Asia/Shanghai
+approvals:
+  destructive_slash_confirm: false
+command_allowlist:
+  - execute_code
+  - script execution via heredoc
+  - sudo with privilege flag (stdin/askpass/shell/list)
+plugins:
+  enabled:
+    - crossdoor-inbox
+    - disk-cleanup
+  disabled: []
+  entries:
+    crossdoor-inbox:
+      allow_tool_override: false
+      allow_gateway_injection: true
+      settings:
+        session_key: agent:main:qqbot:dm:<DM_CHAT_ID>
+cron:
+  wrap_response: false
+kanban:
+  review_dispatch: true
+code_execution:
+  timeout: 300
+  max_tool_calls: 50
+streaming:
+  enabled: false
+onboarding:
+  seen:
+    busy_input_prompt: true
+telemetry:
+  shared_metrics:
+    enabled: false
+updates:
+  pre_update_backup: false
+  backup_keep: 5
+  non_interactive_local_changes: stash
+_config_version: 45
+session_reset:
+  mode: none
+  idle_minutes: 1440
+  at_hour: 4
+group_sessions_per_user: true
+platform_toolsets:
+  cli:
+    - hermes-cli
+  telegram:
+    - hermes-telegram
+  discord:
+    - hermes-discord
+  whatsapp:
+    - hermes-whatsapp
+  slack:
+    - hermes-slack
+  signal:
+    - hermes-signal
+  homeassistant:
+    - hermes-homeassistant
+  qqbot:
+    - hermes-qqbot
+  yuanbao:
+    - hermes-yuanbao
+  teams:
+    - hermes-teams
+  google_chat:
+    - hermes-google_chat
+platforms:
+  dingtalk:
+    enabled: false
+  qqbot:
+    enabled: true
+    extra:
+      app_id: <APP_ID>
+      client_secret: \"<SECRET>\"
+      dm_policy: allowlist
+      group_policy: allowlist
+      allow_from:
+        - <DM_CHAT_ID>
+      group_allow_from:
+        - '*'
+  photon:
+    enabled: false
+  weixin:
+    enabled: true
+  a2a:
+    enabled: true
+    extra:
+      host: 127.0.0.1
+      port: 9901
+tts:
+  provider: openai
+  openai:
+    model: piper-zh_CN-huayan-medium
+    voice: piper-zh_CN-huayan-medium
+    base_url: http://172.17.0.1:8091/v1
+    api_key: \"<SECRET>\"

@@ -1,0 +1,8 @@
+name: hindsight_flush
+version: 0.1.0
+description: >
+  干活门（默认 profile）的 Hindsight 退出冲缓冲补丁：只重写 shutdown()，缓冲非空时借
+  bundled 自己的 flush-on-switch 冲一次，其余行为完全委托 bundled 实现。
+  用途 = `retain_every_n_turns: 2` 时，进程被硬杀（容器重启）不再丢掉最后那一轮。
+  配置 `memory.provider: hindsight_flush` 即启用；改回 `hindsight` 一行回退。
+  冲缓冲失败只记 warning、绝不挡退出。

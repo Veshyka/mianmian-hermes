@@ -1,0 +1,351 @@
+model:
+  default: deepseek-v4-flash
+  provider: deepseek
+  base_url: ''
+# 整群共用一条会话（2026-10-03 主人拍板）。⚠️ 生效的是**这一层**（GatewayConfig）：
+# 会话键由 SessionStore._generate_session_key 用 self.config.group_sessions_per_user 算，
+# 平台 extra 里那份只在网关基类兜底路径（telegram/slack 那种）用得上——两份都留着保持一致。
+group_sessions_per_user: false
+memory:
+  provider: hindsight_guard
+compression:
+  enabled: true
+  threshold: 0.25
+  threshold_tokens: 250000
+skills:
+  external_dirs:
+    - /opt/data/shared-skills
+plugins:
+  enabled:
+    - onebot
+    - crossdoor-tochat
+  entries:
+    crossdoor-tochat:
+      allow_gateway_injection: true
+      settings:
+        session_key: agent:main:onebot:dm:<OWNER_QQ>
+tools:
+  tool_search:
+    enabled: 'off'
+approvals:
+  deny:
+    - '*rm -rf*'
+    - '*rm -fr*'
+    - '*sudo *'
+    - '*mkfs*'
+    - '*fdisk*'
+    - '*parted*'
+    - '*dd if=*'
+    - '*docker rm*'
+    - '*docker rmi*'
+    - '*docker volume rm*'
+    - '*docker system prune*'
+    - '*shutdown*'
+    - '*reboot*'
+    - '*poweroff*'
+    - '*passwd*'
+    - '*userdel*'
+    - '*crontab -r*'
+    - '*chmod -R 777*'
+    - '*> /dev/sd*'
+    - '*askpass*'
+    - '*/.env*'
+    - '*secrets/*'
+  destructive_slash_confirm: false
+_config_version: 45
+platforms:
+  api_server:
+    enabled: true
+    extra:
+      host: 127.0.0.1
+      port: 8643
+  a2a:
+    enabled: true
+    extra:
+      host: 127.0.0.1
+      port: 9900
+  onebot:
+    enabled: true
+    extra:
+      ws_host: 127.0.0.1
+      ws_port: 6700
+      self_id: '<BOT_QQ>'
+      read_only: false
+      dm_policy: open
+      allow_from:
+        - '*'
+      group_enabled: true
+      group_wake_mode: gated
+      group_gate_threshold: 0.35
+      group_memory_guard_required: true
+      group_at_max_per_minute: 4
+      group_at_max_per_hour: 50
+      # 整个群共用一条会话（主人 2026-10-03 拍板）：默认 True 会按发言人拆会话，
+      # 群里换个人说话就"另起对话"，她跟本群的上下文不连贯。
+      group_sessions_per_user: false
+      # 上下文注入口径（主人 2026-10-03 拍板）：delta = 只发"上次被叫醒之后的新消息"，
+      # 不重复发已经在会话历史里的部分（省 token，也不让压缩提前触发）；
+      # 想回到老口径（每轮发最近 N 条）就改成 window。
+      group_context_inject_mode: delta
+      group_context_inject_msgs: 30      # 每次注入的条数上限（久未唤醒时防一次灌几百条）
+      group_allow_from:
+        - '*'
+      # ── 主动私聊：按「沉默时长」升概率的纯脚本斜坡（2026-10-03 主人定稿）────────
+      # 每 proactive_dm_tick_min 分钟给一格；p = 格数 × step_pct。掷中才叫醒她（没掷中不花 LLM）。
+      # 静默窗里不涨、不触发，但概率**不清空**（昨天 00:30 停在 40% → 今天 07:00 从 40% 接着涨）。
+      # 任何对话（他说话 / 她说话）→ 归零；触发 → 也归零；**不加冷却**（主人明确不要）。
+      # 口径与模拟值见 plugins/onebot/proactive.py 头注（现役二次形状：墙上中位 2h30m、保底 5h）。
+      proactive_dm_enabled: true
+      # 形状（2026-10-04 主人「预期 2.5h 一条」）：quadratic = p 按 (格数/ramp_hours×6)² 涨，
+      # 慢起步后段加速。实测（20 万次，含静默窗冻结）：墙上中位 2h30m、1 小时内开口仅 7%、
+      # 3 小时内 65%、5 小时保底。想回到 10-03 的线性口径：ramp_shape 改 linear（配合 step_pct）。
+      proactive_dm_ramp_shape: quadratic
+      proactive_dm_ramp_hours: 5          # 爬到 100%（保底）用几个小时
+      proactive_dm_step_pct: 3            # 只在 ramp_shape=linear 时生效
+      proactive_dm_tick_min: 10
+      proactive_dm_quiet: "00:30-07:00"
+      # ── 语音转写（2026-10-04）──────────────────────────────────────────────
+      # QQ 语音（record 段）以前只进一个 "[语音]" 空壳。现在：协议端 get_record 转出
+      # mp3（QQ 那份 .amr 其实是 silk 换皮，本机 ffmpeg 解不了）→ 落盘 → 本地 whisper
+      # 转写 → 正文里的 "[语音]" 换成 "[语音: 文本]"。任何一步失败保持占位。
+      # 关掉就退回空壳行为。stt_timeout 要够长：第一次调用要等模型加载。
+      voice_transcribe_enabled: true
+      voice_out_format: mp3
+      stt_url: http://172.17.0.1:8090/v1/audio/transcriptions
+      stt_model: Systran/faster-whisper-small
+      stt_timeout: 60
+      # ── 上线补投（2026-10-04 主人：不在线期间的消息，上线一瞬间丢给她，最近 5 条）──
+      # 私聊：合成**一个**回合（带「你刚上线」抬头）；群聊：追进滚动窗口 + 过一遍唤醒判定
+      # （在群里 @ 过她的漏消息，一上线就叫她）。只取「游标之后」的消息，所以不会重复补。
+      offline_backfill_enabled: true
+      offline_backfill_max: 5            # 每个会话最多补几条
+      offline_backfill_delay_s: 6        # 等她连上后等几秒再捞（协议端热身）
+      # ── 自动引用（2026-10-04 主人：「没必要引用就别引用」）──
+      # 私聊每条回复都挂着「引用他这轮第一条消息」很吵 → 私聊默认不引用；
+      # 群聊保留（有上下文价值）。她想引用哪条自己在正文写 [CQ:reply,id=…] 即可。
+      auto_quote_dm: false
+      auto_quote_group: true
+      # ── 表情包自动打标 + 出站发图（2026-10-04 主人：入库排队识别；发的时候按情绪随机挑）──
+      # 打标是后台队列（视觉模型 8081 是 --parallel 1，还兼着 Hindsight 抽取）：
+      # 入库只入队，worker 每条之间歇 interval_s，永不同步阻塞接收。
+      sticker_label_enabled: true
+      sticker_label_url: http://172.17.0.1:8081/v1/chat/completions
+      sticker_label_model: bonsai2-27b
+      sticker_label_timeout: 600
+      sticker_label_max_attempts: 3
+      sticker_label_interval_s: 15
+      sticker_label_batch: 3
+      sticker_label_boot_scan: true
+      # 她在正文里写 [表情包:开心]（按情绪挑一张，带近义扩展）/ [表情包:/abs/x.gif]（指定那张）
+      sticker_send_enabled: true
+      # ── 告警通道（2026-10-04 主人授权「优化性质的自改」）────────────────────
+      # 原来指向 :8098/report（AstrBot 时代的 hermes_report 接收端，随 AstrBot 退役
+      # 已不存在，实测 000）→ 每次告警只写本地日志 onebot-alerts.log + 一行
+      # "alert delivery failed"。改指 magicpush（同健康自检走的那条，实测 200）：
+      # token 从 secrets 读、不落本文件；体是 magicpush 的 {title, content, type}。
+      alert_enabled: true
+      alert_magicpush: true
+      alert_report_url: http://172.17.0.1:818/api/push
+      alert_token_file: /opt/data/secrets/magicpush.token
+      group_admin_enabled: true
+      group_admin:
+        enabled: true
+        welcome:
+          enabled: true
+          text: '{at} 欢迎进群～'
+          groups: []
+          cooldown_s: 3.0
+        leave:
+          enabled: false
+        request:
+          # agent（2026-10-03）：申请交给 AI 自己审 —— 群管理不动手、也不给主人发私聊；
+          # 她那边是「审申请回合」，宽松放行，超频的直接放行（见 join_review_max_per_hour）。
+          policy: agent
+          reject_reason: 暂时不开放
+          notify_owner: false
+        # 入群申请每小时最多唤醒她几次来审（主人：「申请一小时不要给她发太多」）；
+        # 超过这个数的申请直接静默放行，不花 AI 的钱。
+        join_review_max_per_hour: 1
+        keywords: []
+        banned_words:
+          enabled: false
+        anti_recall:
+          enabled: true
+          text: '{name} 撤回了一条消息：{content}'
+          groups: []
+          skip_self: true
+        commands:
+          enabled: true
+          prefix: /
+          groups: []
+        stats:
+          enabled: true
+      stickers_enabled: true
+      stickers_max_items: 200
+      stickers_max_total_bytes: 1073741824
+      stickers_retention_days: 30
+      emoji_like_enabled: true
+a2a_agents:
+  work:
+    url: http://127.0.0.1:9901
+    timeout: 300
+platform_toolsets:
+  api_server:
+    - a2a
+    - file
+    - memory
+    - terminal
+    - vision
+    - web
+  cli:
+    - a2a
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - connections
+    - cronjob
+    - delegation
+    - file
+    - image_gen
+    - memory
+    - session_search
+    - skills
+    - terminal
+    - todo
+    - tts
+    - vision
+    - web
+  a2a:
+    - a2a
+    - cronjob
+    - file
+    - memory
+    - session_search
+    - skills
+    - vision
+    - web
+  onebot:
+    - a2a
+    - cronjob
+    - file
+    - memory
+    - session_search
+    - skills
+    - terminal
+    - vision
+    - web
+known_plugin_toolsets:
+  api_server:
+    - a2a
+    - spotify
+  cli:
+    - a2a
+    - spotify
+known_builtin_toolsets:
+  api_server:
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - connections
+    - context_engine
+    - cronjob
+    - delegation
+    - discord
+    - discord_admin
+    - file
+    - homeassistant
+    - image_gen
+    - kanban
+    - memory
+    - session_search
+    - skills
+    - spotify
+    - stt
+    - terminal
+    - todo
+    - tts
+    - video
+    - video_gen
+    - vision
+    - web
+    - x_search
+    - yuanbao
+  cli:
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - connections
+    - context_engine
+    - cronjob
+    - delegation
+    - discord
+    - discord_admin
+    - file
+    - homeassistant
+    - image_gen
+    - kanban
+    - memory
+    - session_search
+    - skills
+    - spotify
+    - stt
+    - terminal
+    - todo
+    - tts
+    - video
+    - video_gen
+    - vision
+    - web
+    - x_search
+    - yuanbao
+  a2a:
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - connections
+    - context_engine
+    - cronjob
+    - delegation
+    - discord
+    - discord_admin
+    - file
+    - homeassistant
+    - image_gen
+    - kanban
+    - memory
+    - session_search
+    - skills
+    - spotify
+    - stt
+    - terminal
+    - todo
+    - tts
+    - video
+    - video_gen
+    - vision
+    - web
+    - x_search
+    - yuanbao
+onboarding:
+  seen:
+    busy_input_prompt: true
+browser:
+  cdp_url: http://127.0.0.1:16002
+stt:
+  provider: openai
+  language: ''
+  openai:
+    model: Systran/faster-whisper-small
+    base_url: http://172.17.0.1:8090/v1
+    language: ''
+tts:
+  provider: openai
+  openai:
+    base_url: http://172.17.0.1:8091/v1
+    api_key: \"<SECRET>\"
+    model: piper-zh_CN-huayan-medium
+    voice: piper-zh_CN-huayan-medium

@@ -1,0 +1,62 @@
+# 个人号协议端(NapCat) + AstrBot 通道层 —— 复制后改路径即用
+#
+# 为什么 host 网络：主容器 hermes 本身就是 network_mode: host，其 api_server
+# 只绑宿主 127.0.0.1:8642；sidecar 只有同在宿主网络里才能直连，这样 Hermes 侧
+# 零配置改动（不换 bind、不重发布端口、不重启）。
+#
+# 端口（host 网络下直接落在宿主）：
+#   6185 AstrBot WebUI | 6199 AstrBot 反向 WS(NapCat 连它) | 6099 NapCat WebUI
+# 无公网 IPv4 时暴露面=本机+Tailscale，面板务必设强口令。
+#
+# 一次性手动步骤：NapCat 面板扫码登录小号 → 配反向 WS ws://127.0.0.1:6199/ws
+# （token 与 AstrBot 侧一致）→ AstrBot 里把 provider_settings.enable 设为 false
+# （算力全走 Hermes），并把分段回复的「仅对 LLM 结果分段」**关掉**，否则插件回复不分段。
+#
+# ⚠️ 容器【重建】（改挂载/镜像/环境变量、compose down+up）会打废 QQ 登录态 → 要重新扫码；
+#    单纯 restart 通常保得住。所以改配置时一次性改完再起，并挑主人在线时做。
+#    改完先 `docker compose config -q` 验语法，再 `up -d`。
+
+services:
+  napcat:
+    image: mlikiowa/napcat-docker:latest
+    container_name: napcat
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      # 免扫码：镜像 entrypoint.sh 末行是 `gosu napcat /opt/QQ/qq --no-sandbox -q $ACCOUNT`
+      # —— 它读【环境变量 ACCOUNT】，写 compose command: ["-q","<uin>"] 完全无效。
+      # 吃到参数的特征日志：`正在快速登录 <uin>`；首次仍需扫码。
+      - ACCOUNT=<小号 uin>
+      - NAPCAT_UID=${NAPCAT_UID:-1003}
+      - NAPCAT_GID=${NAPCAT_GID:-1001}
+      - TZ=Asia/Shanghai
+    volumes:
+      # 数据统一收在映射根的 stack/ 下，代码/文档留在 chat-layer/
+      - ../stack/napcat/config:/app/napcat/config
+      - ../stack/napcat/ntqq:/app/.config/QQ
+    mem_limit: 1536m
+    security_opt:
+      - no-new-privileges:true
+
+  astrbot:
+    image: soulter/astrbot:latest
+    container_name: astrbot
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ../stack/astrbot/data:/AstrBot/data
+      # 插件目录挂进来（**别加 :ro**，插件要往自己目录写 history.json）
+      - ./plugin/hermes_forward:/AstrBot/data/plugins/hermes_forward
+      - ./stickers:/AstrBot/data/plugins/hermes_forward/stickers
+      - /etc/localtime:/etc/localtime:ro
+    mem_limit: 1024m
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - napcat
+#
+# 官方参照（两处互相背书，别自己发明）：
+#   AstrBot 仓库 compose.yml（image/端口/数据卷）
+#   NapCat-Docker/compose/astrbot.yml（MODE=astrbot 联动的完整组合）
