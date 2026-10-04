@@ -1,0 +1,5 @@
+name: crossdoor-inbox
+version: 1.0.0
+description: "跨门任务书收件箱（干活门侧）：把写进 /opt/data/var/crossdoor-inbox/ 的任务书当作主人的入站消息，注入主人 QQ 私聊会话——真正激活那一轮，回复也回该会话。无端口、无令牌、无网络面。"
+author: "棉棉（干活门）"
+hooks: []

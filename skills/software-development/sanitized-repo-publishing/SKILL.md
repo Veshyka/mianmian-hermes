@@ -51,6 +51,10 @@ curl -s -o /dev/null -w '%{http_code}' -m 6 https://github.com # 通不通（本
    与 Hermes 自带目录**逐字节相同** → 上游的；`SKILL.md` 的 `author:` 不是本地/本方 → 第三方的；
    通篇找不到任何本机标记（本机路径、协议端名、部署专名）→ 通用模板。三类都不进仓库。
    实测一轮就剔掉 121 个文件，留下的才是真正的本地定制。
+9. **推送成功 ≠ 远端内容对。** 收尾必须**从远端读回来核**，三样都要：① `git ls-remote origin`
+   对 commit；② 拉远端文件树（API 或 `git ls-tree`）看文件数、看有没有敏感路径；③ 抽 1~3 个
+   文件把**内容**下载回来验脱敏与占位符。只验本地等于没验。转公开后**再匿名（不带任何凭证）**
+   打一次仓库页与 raw 文件，200 才算真的公开。
 
 ## 步骤
 
@@ -100,6 +104,26 @@ curl -s -o /dev/null -w '%{http_code}' -m 6 https://github.com # 通不通（本
   只有校验能发现（实测下到的 11 MB 包只有 1.1 MB，校验对不上就该拒绝安装，不要「装完试试看」）。
 - **shell 里别用 `if cmd | tail; then` 判成败**：管道状态码取最后一个命令（`tail`），永远为真。
   写成 `if out=$(cmd 2>&1); then ... else echo "$out"` —— 尤其别让发布脚本把失败报成「已推送」。
+- **排除规则要同时管「目录名」和「文件名」**：只挡 `prompts/ chat-profile/ backup/` 这类目录，
+  散落在树根的 `*persona*`、`*persona-prompt.md` 照样会漏进去（实测一次漏了 4 个）。文件名通配与
+  目录名通配各写一遍；`.bak-*` 这类**目录**要按前缀挡（`d.startswith(".bak")`），别只写在文件通配里。
+- **`.gitignore` 的 `secrets/` 不覆盖 `.secrets/`**：点号不同名就是两条不同路径。凭证目录一旦带点，
+  必须单独写一行，再补 `*credential*`、`*_token`、`.ssh/`、`.config/` 做纵深防御。
+  （另一层硬隔离：仓库根是**产物子目录**、源工作目录根本不是 git 仓库，凭证文件物理上不在任何仓库范围内。）
+- **写凭证前先确认目标目录可写，并让脚本写失败时硬报错**：`secrets/` 这类目录常是 root 所有（`700`），
+  普通用户写不进去；而「先写文件、后打印成功」的脚本会把 permission denied 吞掉，报出
+  `LOGIN_OK token 已写入` 这种假成功（代价是要主人白授权一次）。写到自己的可写目录（如 `~/.secrets/`），
+  写盘失败当致命错误退出。
+- **本地专有技能会被「通用模板」过滤误杀**：某技能确实是自己写的、但正文里没有本机标记，就被当成
+  通用模板剔掉了。给这类文件留一个显式 `SKILL_ALLOW`（写**相对仓库根的真实路径**——技能可能嵌在
+  类别目录下，也可能在 `shared-skills/` 这类平级目录里），比放宽整体过滤安全。
+- **白名单里写不存在的路径要报错，不要静默跳过**：静默跳过会让「以为收进去了」骗过自己和主人
+  （实测一次把技能白名单写成错的目录层级，跑出来的产物少了整套文件却没人发现）。
+- **别在命令里拼 `A="-x $PX -H Authorization: token $TOK"` 这种变量**：word-splitting 会把
+  header 拆成两个参数、把 token 当成 URL，静默变成 401/502 假失败。header 要原样写在命令行里。
+- **跑闸/推送别用长前台超时**：后台会话一次发布要几分钟，前台超时设成 >600s 会被**静默转成后台**，
+  当轮拿不到结果、还得等一次通知才接得上。要当场看结果就把超时压到 ≤540s（闸通常 1~2 分钟，够），
+  确实要更久就主动用后台 + 完成通知，并把后续步骤（转公开、发链接）写成「通知到了再接」。
 
 ## 授权与节奏
 
@@ -133,21 +157,33 @@ scripts/publish_push.sh --check          # 只跑闸：公开前/推送前的复
 4. 让主人在网页建**空的私有仓**：不勾 README / .gitignore / LICENSE（勾了会和推送内容打架，多一次合并）；
 5. 拿到仓库地址后 `git remote add origin git@github.com:<用户>/<仓库>.git`，跑一次 `publish_push.sh`。
 
+主人想「全自动、别让我点建仓」时走**设备码**（他自己只需在浏览器确认一次）：
+`POST /login/device/code`（**显式挂代理** + 带 `User-Agent`）拿到 `user_code`/`device_code` →
+把 8 位码和 `https://github.com/login/device` 发给主人（提前说一句「页面显示授权给 GitHub CLI 是正常的」，
+免得他犹豫）→ 后台轮询 `POST /login/oauth/access_token` 直到拿到 token → token 落盘到**可写目录**
+（600、不进白名单）→ `POST /user/repos {"name":"…","private":true}` 建私有空仓。
+推送仍走 SSH，token 只用于 API。命令与轮询脚本写法见 `references/github-auth-and-remote-verify.md`。
+
 ## 相关
 
 - `references/sanitizer-rule-catalogue.md`：可直接抄的规则表（静态/动态/复核三类）+ 命中核实顺序。
+- `references/github-auth-and-remote-verify.md`：设备码换 token → 建私有仓 → 推 → **远端读回核对** → 转公开的整套命令。
 - 仓库门面模板见 `publish/overlay/`（README / SECURITY.md / .gitignore 三件）。
 
-## 本机网络实测（2026-10-04，决定「能不能让 agent 自己建仓」）
+## 网络：代理必须显式给，否则是「能 GET、不能 POST」的假象
 
-| 动作 | 结果 |
-|---|---|
-| `git@github.com` SSH（22 与 ssh.github.com:443） | ✅ 通（公钥加完即 `Hi <user>!`） |
-| `GET https://github.com` / `api.github.com` | ✅ 200（直连、走代理都行） |
-| `POST https://github.com/login/device/code`（OAuth 设备码换 token） | ❌ 直连与走代理**都超时**，连响应头都拿不到 → 拿不到 API token |
-| 装 `gh` CLI（release 包） | ❌ 下载被截断（1.1 MB / 11 MB），sha256 校验不过 → 主动放弃安装 |
-| 推送（`git push` over SSH） | ✅ 通（与 GET/POST 的差异无关，SSH 走 22 端口） |
+沙箱/容器里常常**没有** `http_proxy` 环境变量（`env | grep -i proxy` 为空），于是同一台机器上会出现：
 
-**结论**：agent 在这套网络下**只能推、不能建仓**（建仓需要 API token 或 gh）。所以流程里
-「主人点 3 下建空私有仓」这一步别试图自动化，直接请主人做，比折腾 token 更快也更安全。
-验证连通性用 `ssh -T git@github.com`，别用 `curl` 打 API。
+| 动作 | 直连 | 显式挂本机代理（`-x http://<宿主>:17890`） |
+|---|---|---|
+| `GET https://github.com` / `api.github.com` | ✅ 200 | ✅ 200 |
+| `POST https://github.com/login/device/code` | ❌ 卡到超时（连响应头都没） | ✅ 秒回 200 |
+| release 包（`gh` 之类二进制）下载 | ❌ 中途断流、sha256 对不上 | ✅ |
+
+**规则**：`curl` 一律显式 `-x <本机代理>`（端口要真测：`bash -c "echo > /dev/tcp/<宿主>/<port>"`），
+不要指望环境变量。遇到「GET 通、POST/下载卡死」先查这条，别怀疑账号或权限；`ssh -T git@github.com`
+仍然是验证推送通道最快的办法（SSH 走 22 端口，与这里的 HTTP 路径无关）。
+下载二进制**先挂代理再下**，并在 install 前核对 release 的 sha256。
+
+**建仓不能靠 push**：往不存在的仓库推，GitHub 回 `ERROR: Repository not found`——没有 push-to-create。
+建仓只有两条路：让主人网页点，或用 API token 打 `POST /user/repos`。两条都要**先私有**。
