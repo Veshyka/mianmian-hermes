@@ -3,6 +3,12 @@
 .env.*
 *.env
 secrets/
+# 主人在 2026-10-04 点出：secrets/ 这条**不覆盖** .secrets/（点号不同名），补上
+.secrets/
+.config/
+*credential*
+*_token*
+.ssh/
 *.token
 *.pem
 *.key
